@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from hojichar import document_filters, tokenization, Compose, Document
+import argparse
 import os
 from multiprocessing import Pool
 from concurrent.futures import ThreadPoolExecutor
@@ -51,9 +52,13 @@ def process_json_lines(inputs):
 
 
 def mc4_ja_main():
-    input_dir = "/persistentshare/storage/team_sannai/corpus/category/1B/raw/ja_mc4/"
-    output_dir = "/persistentshare/storage/team_sannai/corpus/category/1B/filtered/ja_mc4/"
- 
+    parser = argparse.ArgumentParser(description='Process some documents.')
+    parser.add_argument('--input_dir', type=str,
+                        help='The input directory containing documents to process', required=True)
+    parser.add_argument('--output_dir', type=str,
+                        help='The input file containing documents to process', required=False, default="./tmp/output")
+    args = parser.parse_args()
+    
     start_idx = 0
     end_idx = 1
 
@@ -67,11 +72,11 @@ def mc4_ja_main():
 
     # ThreadPoolExecutorを使って並列化
     with ThreadPoolExecutor(max_workers=process_num) as executor:
-        results = executor.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
+        results = executor.map(process_json_lines, [(jsonname, args.input_dir, args.output_dir) for jsonname in jsonl_list])
         
-        for result in results:
-            print(result)
-            
+    for result in results:
+        print(result)
+
     # with Pool(process_num) as p: 
         # exit_codes = p.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
         # print("Exit codes : {}".format(exit_codes))
