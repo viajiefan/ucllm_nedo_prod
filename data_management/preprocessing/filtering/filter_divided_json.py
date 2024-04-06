@@ -44,7 +44,7 @@ def process_json_lines(inputs):
                     rejected.write(result.text + "\n")
                 else:
                     writer.write(result.text + "\n")
-                    remained_lines.append(result.text)
+                    # remained_lines.append(result.text)
 
     with open(os.path.join(output_dir, f"stat_{json_filename}"), "w") as writer:
         writer.write(json.dumps(cleaner.statistics, ensure_ascii=False) + "\n")
@@ -67,8 +67,11 @@ def mc4_ja_main():
 
     # ThreadPoolExecutorを使って並列化
     with ThreadPoolExecutor(max_workers=process_num) as executor:
-        executor.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
+        results = executor.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
         
+        for result in results:
+            print(result)
+            
     # with Pool(process_num) as p: 
         # exit_codes = p.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
         # print("Exit codes : {}".format(exit_codes))
