@@ -13,7 +13,8 @@ def __readlines(input_file: str):
     with open(input_file) as fp:
         return fp.readlines()
     
-def process_json_lines(json_filename, input_dir, output_dir):
+def process_json_lines(inputs):
+    json_filename, input_dir, output_dir = inputs
     lines = __readlines(input_dir + json_filename)
 
     remained_lines = []
@@ -64,7 +65,7 @@ def mc4_ja_main():
     
     process_num = len(jsonl_list)
     with Pool(process_num) as p: 
-        exit_codes = p.map(process_json_lines, jsonl_list, kwargs={"input_dir": input_dir, "output_dir": output_dir})
+        exit_codes = p.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
         print("Exit codes : {}".format(exit_codes))
 
 if __name__ == "__main__":
