@@ -3,8 +3,7 @@ import json
 from hojichar import document_filters, tokenization, Compose, Document
 import os
 from multiprocessing import Pool
-import subprocess
-import time
+from concurrent.futures import ThreadPoolExecutor
 
 
 import custom_token_filters, custom_tokenization, custom_document_filters
@@ -14,6 +13,7 @@ def __readlines(input_file: str):
         return fp.readlines()
     
 def process_json_lines(inputs):
+    print(f"process json filter inputs: {inputs}")
     json_filename, input_dir, output_dir = inputs
     lines = __readlines(input_dir + json_filename)
 
@@ -64,9 +64,14 @@ def mc4_ja_main():
     print(f"dealing jsonl list: {jsonl_list}")
     
     process_num = len(jsonl_list)
-    with Pool(process_num) as p: 
-        exit_codes = p.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
-        print("Exit codes : {}".format(exit_codes))
+
+    # ThreadPoolExecutorを使って並列化
+    with ThreadPoolExecutor(max_workers=process_num) as executor:
+        executor.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
+        
+    # with Pool(process_num) as p: 
+        # exit_codes = p.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
+        # print("Exit codes : {}".format(exit_codes))
 
 if __name__ == "__main__":
     mc4_ja_main()
