@@ -1,3 +1,7 @@
+# 分割された複数のjsonl ファイルに対して，1jsonl--1thread で復数のjsonlファイルを処理する
+# jsonlの名前の並び や, 処理するidxの範囲を指定すること 
+# usage: python filter_divided_json.py --input_dir /path/to/input_dir --output_dir /path/to/output_dir
+
 from datetime import datetime
 import json
 from hojichar import document_filters, tokenization, Compose, Document
@@ -12,8 +16,8 @@ import custom_token_filters, custom_tokenization, custom_document_filters
 def __readlines(input_file: str):
     with open(input_file) as fp:
         return fp.readlines()
-    
-def process_json_lines(inputs):
+
+def process_json_lines_ja(inputs):
     print(f"process json filter inputs: {inputs}")
     json_filename, input_dir, output_dir = inputs
     lines = __readlines(input_dir + json_filename)
@@ -52,6 +56,7 @@ def process_json_lines(inputs):
 
 
 def mc4_ja_main():
+    """ mc4-ja mc4-ja-00X.jsonl についてフィルタリングする """
     parser = argparse.ArgumentParser(description='Process some documents.')
     parser.add_argument('--input_dir', type=str,
                         help='The input directory containing documents to process', required=True)
@@ -66,20 +71,17 @@ def mc4_ja_main():
     jsonl_list = []
     for idx in range(start_idx, end_idx+1):
         jsonl_list.append(f"c4-ja-{str(idx).zfill(3)}.jsonl")
-    print(f"dealing jsonl list: {jsonl_list}")
+    print(f"dealing {len(jsonl_list)} jsonl files, list: {jsonl_list}")
     
     process_num = len(jsonl_list)
 
-    # ThreadPoolExecutorを使って並列化
+    # ThreadPoolExecutorを使って並列化  # srun の場合 -c 12　などでcpuを割り当て必要 (--cpus-per-task=12 で 12ファイル処理は確認)
     with ThreadPoolExecutor(max_workers=process_num) as executor:
-        results = executor.map(process_json_lines, [(jsonname, args.input_dir, args.output_dir) for jsonname in jsonl_list])
+        results = executor.map(process_json_lines_ja, [(jsonname, args.input_dir, args.output_dir) for jsonname in jsonl_list])
         
     for result in results:
         print(result)
-
-    # with Pool(process_num) as p: 
-        # exit_codes = p.map(process_json_lines, [(jsonname, input_dir, output_dir) for jsonname in jsonl_list])
-        # print("Exit codes : {}".format(exit_codes))
+    print("filter done.")
 
 if __name__ == "__main__":
     mc4_ja_main()
