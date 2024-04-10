@@ -1,5 +1,6 @@
 # 分割された複数のjsonl ファイルに対して，1jsonl--1thread で復数のjsonlファイルを処理する
 # jsonlの名前の並び や, 処理するidxの範囲を指定すること 
+# TODO 未テスト
 # usage: python filter_divided_en_json.py --input_dir /path/to/input_dir --output_dir /path/to/output_dir
 
 from datetime import datetime
@@ -8,7 +9,7 @@ from hojichar import document_filters, tokenization, Compose, Document
 import argparse
 import os
 from multiprocessing import Pool
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 import custom_token_filters, custom_tokenization, custom_document_filters
@@ -76,8 +77,8 @@ def mc4_en_main():
     process_num = len(jsonl_list)
 
     # ThreadPoolExecutorを使って並列化  # srun の場合 -c 12　などでcpuを割り当て必要 (--cpus-per-task=12 で 12ファイル処理は確認)
-    with ThreadPoolExecutor(max_workers=process_num) as executor:
-        results = executor.map(process_json_lines_ja, [(jsonname, args.input_dir, args.output_dir) for jsonname in jsonl_list])
+    with ProcessPoolExecutor(max_workers=process_num) as executor:
+        results = executor.map(process_json_lines_en, [(jsonname, args.input_dir, args.output_dir) for jsonname in jsonl_list])
         
     for result in results:
         print(result)

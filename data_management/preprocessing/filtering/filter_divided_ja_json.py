@@ -8,7 +8,7 @@ from hojichar import document_filters, tokenization, Compose, Document
 import argparse
 import os
 from multiprocessing import Pool
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 import custom_token_filters, custom_tokenization, custom_document_filters
@@ -68,7 +68,7 @@ def mc4_ja_main():
     end_idx = 1
 
 
-    jsonl_list = []
+    jsonl_list = [] # 並列処理対象のjsonlファイルリスト
     for idx in range(start_idx, end_idx+1):
         jsonl_list.append(f"c4-ja-{str(idx).zfill(3)}.jsonl")
     print(f"dealing {len(jsonl_list)} jsonl files, list: {jsonl_list}")
@@ -76,7 +76,8 @@ def mc4_ja_main():
     process_num = len(jsonl_list)
 
     # ThreadPoolExecutorを使って並列化  # srun の場合 -c 12　などでcpuを割り当て必要 (--cpus-per-task=12 で 12ファイル処理は確認)
-    with ThreadPoolExecutor(max_workers=process_num) as executor:
+    # with ThreadPoolExecutor(max_workers=process_num) as executor:   # multi-cpu使えなかった.
+    with ProcessPoolExecutor(max_workers=process_num) as executor:  # multi-cpu使えることを確認
         results = executor.map(process_json_lines_ja, [(jsonname, args.input_dir, args.output_dir) for jsonname in jsonl_list])
         
     for result in results:
