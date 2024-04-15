@@ -4,13 +4,11 @@
 # --no-checkout: clone 時には.git ディレクトリを作成
 
 # スクリプトを以下のように作成
-```sh
 git clone --filter=blob:none --no-checkout https://huggingface.co/datasets/tiiuae/falcon-refinedweb
 
 cd falcon-refinedweb
 # 主なデータはdata にあるので， dataのみを取得 (DatasetsページのFiles and versionsで確認可能)
 git sparse-checkout set data
-```
 
 
 # -------------- 失敗 --------------
